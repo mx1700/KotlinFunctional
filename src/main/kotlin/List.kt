@@ -92,7 +92,7 @@ fun <T>List<T>.count() = when(this) {
 /**
  * 翻转列表
  */
-fun <T>List<T>.flip(): List<T> = this.foldLeft<T, List<T>>(Nil(), { a, l -> LinkList(a, l) })
+fun <T>List<T>.reversed(): List<T> = this.foldLeft<T, List<T>>(Nil(), { a, l -> LinkList(a, l) })
 
 /**
  * map
@@ -121,7 +121,7 @@ fun main(args: Array<String>) {
     println(listOf(1, 2, 3, 10).foldRight(1, { a, b -> a * b }))
     println(listOf(1, 1, 1).count())
     println(listOf(1, 2, 3, 4, 5).foldLeft(0, { a, b -> a + b }))
-    println(listOf(1, 2, 3, 4, 5).flip())
+    println(listOf(1, 2, 3, 4, 5).reversed())
     //TODO: 3.13 & 3.15 未完成
     println(listOf(1, 2, 3, 4, 5).map { it * 2 })
     println(listOf(1, 2, 3, 4, 5).filter { it % 2 == 0 })
