@@ -132,6 +132,25 @@ fun <T, R>List<T>.zipWith(l: List<T>, f: (a: T, b: T) -> R): List<R> = when {
     else -> Nil()
 }
 
+/**
+ * 是否包含子序列
+ */
+fun <T>List<T>.hasSubSequence(l: List<T>): Boolean = when {
+    l is Nil -> true
+    this is LinkList && l is LinkList -> if (compare(this, l)) true else this.tail.hasSubSequence(l)
+    else -> false
+}
+
+/**
+ *  从头开始比较两个 list 的元素是否相同，只按照较短的 list 比较，多出的不做比较
+ */
+fun <T>compare(l1: List<T>, l2: List<T>): Boolean {
+    return when {
+        l1 is LinkList && l2 is LinkList -> if (l1.head == l2.head) compare(l1.tail, l2.tail) else false
+        else -> true
+    }
+}
+
 fun main(args: Array<String>) {
     println(listOf(1, 2, 3))
     println(listOf(1, 2, 3).sum())
@@ -151,4 +170,6 @@ fun main(args: Array<String>) {
     println(listOf(1, 2, 3).flatMap { listOf(it, it * 2) })
     println(listOf(1, 2, 3, 4, 5).filter2 { it % 2 == 0 })
     println(listOf(1, 2, 3).zipWith(listOf(1, 4, 6, 8), { a, b -> a + b }))
+    println(compare(listOf(1,2,3), listOf(1,2,3,4)))
+    println(listOf(1, 2, 3, 4, 5, 6).hasSubSequence(listOf(5, 6)))
 }
