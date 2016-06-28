@@ -1,5 +1,7 @@
+package me.mx1700.kotlinfunctional
+
 interface List<out T>
-object Nil : List<Any>
+object Nil : List<Nothing>
 
 data class LinkList<out T>(val head: T, val tail: List<T>) : List<T> {
     override fun toString() = when {
@@ -8,18 +10,14 @@ data class LinkList<out T>(val head: T, val tail: List<T>) : List<T> {
     }
 }
 
-fun <T>listOf(element: T): List<T> = LinkList(element, Nil())
+fun <T>listOf(element: T): List<T> = LinkList(element, Nil)
 
 fun <T>listOf(vararg elements: T): List<T> = when (elements.count()) {
-    0 -> Nil()
-    1 -> LinkList(elements[0], Nil())
-    else -> elements.foldRight(Nil<T>()) { t, r -> LinkList(t ,r) }
+    0 -> Nil
+    1 -> LinkList(elements[0], Nil)
+    else -> elements.foldRight<T, List<T>>(Nil) { t, r -> LinkList(t ,r) }
 }
 
-/**
- * 空列表
- */
-fun <T>Nil(): List<T> = Nil as List<T>
 
 /**
  * 删除第一个元素
@@ -97,7 +95,7 @@ fun <T>List<T>.count() = when(this) {
 /**
  * 翻转列表
  */
-fun <T>List<T>.reversed(): List<T> = this.foldLeft<T, List<T>>(Nil(), { a, l -> LinkList(a, l) })
+fun <T>List<T>.reversed(): List<T> = this.foldLeft<T, List<T>>(Nil, { a, l -> LinkList(a, l) })
 
 /**
  * 用 foldLeft 实现的 foldRight
@@ -107,29 +105,29 @@ fun <T, R>List<T>.foldRight2(init: R, f: (T, R) -> R): R = this.reversed().foldL
 /**
  * map
  */
-fun <T, R>List<T>.map(f: (a: T) -> R): List<R> = this.foldRight<T, List<R>>(Nil(), { a, l -> LinkList(f(a), l) })
+fun <T, R>List<T>.map(f: (a: T) -> R): List<R> = this.foldRight<T, List<R>>(Nil, { a, l -> LinkList(f(a), l) })
 
 /**
  * filter
  */
-fun <T>List<T>.filter(f: (a: T) -> Boolean): List<T> = this.foldRight<T, List<T>>(Nil(), { a, l -> LinkList(a, l).dropWhile { !f(it) } })
+fun <T>List<T>.filter(f: (a: T) -> Boolean): List<T> = this.foldRight<T, List<T>>(Nil, { a, l -> LinkList(a, l).dropWhile { !f(it) } })
 
 /**
  * flatMap
  */
-fun <T, R>List<T>.flatMap(f: (a: T) -> List<R>): List<R> = this.foldRight<T, List<R>>(Nil(), { a, l -> f(a).append(l) })
+fun <T, R>List<T>.flatMap(f: (a: T) -> List<R>): List<R> = this.foldRight<T, List<R>>(Nil, { a, l -> f(a).append(l) })
 
 /**
  * 用 flatMap 实现的 filter
  */
-fun <T>List<T>.filter2(f: (a: T) -> Boolean): List<T> = this.flatMap { if (f(it)) listOf(it) else Nil() }
+fun <T>List<T>.filter2(f: (a: T) -> Boolean): List<T> = this.flatMap { if (f(it)) listOf(it) else Nil }
 
 /**
  * 拉链操作
  */
 fun <T, R>List<T>.zipWith(l: List<T>, f: (a: T, b: T) -> R): List<R> = when {
     this is LinkList && l is LinkList -> LinkList(f(this.head, l.head), this.tail.zipWith(l.tail, f))
-    else -> Nil()
+    else -> Nil
 }
 
 /**
