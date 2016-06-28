@@ -1,5 +1,5 @@
 interface List<out T>
-class Nil<T> : List<T>
+object Nil : List<Any>
 
 data class LinkList<out T>(val head: T, val tail: List<T>) : List<T> {
     override fun toString() = when {
@@ -13,8 +13,13 @@ fun <T>listOf(element: T): List<T> = LinkList(element, Nil())
 fun <T>listOf(vararg elements: T): List<T> = when (elements.count()) {
     0 -> Nil()
     1 -> LinkList(elements[0], Nil())
-    else -> elements.foldRight<T, List<T>>(Nil<T>()) { t, r -> LinkList(t ,r) }
+    else -> elements.foldRight(Nil<T>()) { t, r -> LinkList(t ,r) }
 }
+
+/**
+ * 空列表
+ */
+fun <T>Nil(): List<T> = Nil as List<T>
 
 /**
  * 删除第一个元素
@@ -95,6 +100,11 @@ fun <T>List<T>.count() = when(this) {
 fun <T>List<T>.reversed(): List<T> = this.foldLeft<T, List<T>>(Nil(), { a, l -> LinkList(a, l) })
 
 /**
+ * 用 foldLeft 实现的 foldRight
+ */
+fun <T, R>List<T>.foldRight2(init: R, f: (T, R) -> R): R = this.reversed().foldLeft(init, f)
+
+/**
  * map
  */
 fun <T, R>List<T>.map(f: (a: T) -> R): List<R> = this.foldRight<T, List<R>>(Nil(), { a, l -> LinkList(f(a), l) })
@@ -109,22 +119,36 @@ fun <T>List<T>.filter(f: (a: T) -> Boolean): List<T> = this.foldRight<T, List<T>
  */
 fun <T, R>List<T>.flatMap(f: (a: T) -> List<R>): List<R> = this.foldRight<T, List<R>>(Nil(), { a, l -> f(a).append(l) })
 
+/**
+ * 用 flatMap 实现的 filter
+ */
+fun <T>List<T>.filter2(f: (a: T) -> Boolean): List<T> = this.flatMap { if (f(it)) listOf(it) else Nil() }
+
+/**
+ * 拉链操作
+ */
+fun <T, R>List<T>.zipWith(l: List<T>, f: (a: T, b: T) -> R): List<R> = when {
+    this is LinkList && l is LinkList -> LinkList(f(this.head, l.head), this.tail.zipWith(l.tail, f))
+    else -> Nil()
+}
 
 fun main(args: Array<String>) {
     println(listOf(1, 2, 3))
     println(listOf(1, 2, 3).sum())
     println(listOf(1, 2, 3).removeHead())
+    println(listOf(1, 2, 3).setHead(5))
     println(listOf(1, 2, 3, 4, 5).dropLeft(3))
     println(listOf(1, 1, 1, 2, 3, 1, 4, 5).dropWhile { it == 1 })
     println(listOf(1, 2, 3).append(listOf(4, 5, 6)))
     println(listOf(1, 2, 3, 10).foldRight(0, { a, b -> a + b }))
     println(listOf(1, 2, 3, 10).foldRight(1, { a, b -> a * b }))
+    println(listOf(1, 2, 3, 10).foldRight2(0, { a, b -> a + b }))
     println(listOf(1, 1, 1).count())
     println(listOf(1, 2, 3, 4, 5).foldLeft(0, { a, b -> a + b }))
     println(listOf(1, 2, 3, 4, 5).reversed())
-    //TODO: 3.13 & 3.15 未完成
     println(listOf(1, 2, 3, 4, 5).map { it * 2 })
     println(listOf(1, 2, 3, 4, 5).filter { it % 2 == 0 })
     println(listOf(1, 2, 3).flatMap { listOf(it, it * 2) })
-    //TODO 3.21 未完成
+    println(listOf(1, 2, 3, 4, 5).filter2 { it % 2 == 0 })
+    println(listOf(1, 2, 3).zipWith(listOf(1, 4, 6, 8), { a, b -> a + b }))
 }
