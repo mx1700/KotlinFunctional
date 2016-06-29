@@ -58,12 +58,18 @@ fun <T>Stream<T>.take(n: Int): Stream<T> = when {
 }
 
 /**
- * TODO: drop 会计算 n 个元素，不知道是否符合规范
+ * drop
  */
 fun <T>Stream<T>.drop(n: Int): Stream<T> = when {
     n == 0 -> this
     this is Empty -> Empty
-    this is Cons && n > 0 -> this.tail.drop(n - 1)
+    this is Cons && n > 0 -> {
+        val tail = this.tail
+        when (tail) {
+            is Cons -> Cons({ tail.head }, { tail.tail }).drop(n - 1)
+            else -> Empty
+        }
+    }
     else -> Empty
 }
 
@@ -83,8 +89,8 @@ fun main(args: Array<String>) {
     //println(streamOf(1,2,3).toList())
     //println(listOf(1,2,3,4,5).toStream().exists { it == 2 })
     //println(streamOf(1,2,3,4,5,6).take(2))
-    val l = streamOf(1,2,3,4,5,6).drop(2)
-    println()
+    val l = streamOf(1,2,3,4,5,6).drop(3).take(2)
+    println(l.toList())
 
 
 //    println(s2.toList())
