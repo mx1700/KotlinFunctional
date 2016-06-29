@@ -39,8 +39,8 @@ fun <T>List<T>.setHead(v: T) = when {
  * 从左丢弃元素
  */
 fun <T>List<T>.dropLeft(n: Int): List<T> = when {
-    this is LinkList<T> && n == 1 -> this.tail
-    this is LinkList<T> && n > 1 -> this.tail.dropLeft(n - 1)
+    this is LinkList && n == 1 -> this.tail
+    this is LinkList && n > 1 -> this.tail.dropLeft(n - 1)
     else -> this
 }
 
@@ -48,7 +48,7 @@ fun <T>List<T>.dropLeft(n: Int): List<T> = when {
  * 删除列表中前缀全部符合判定的元素
  */
 fun <T>List<T>.dropWhile(filter: (T) -> Boolean): List<T> = when {
-    this is LinkList<T> && filter(this.head) -> this.tail.dropWhile(filter)
+    this is LinkList && filter(this.head) -> this.tail.dropWhile(filter)
     else -> this
 }
 
@@ -56,7 +56,7 @@ fun <T>List<T>.dropWhile(filter: (T) -> Boolean): List<T> = when {
  * 追加列表
  */
 fun <T>List<T>.append(list: List<T>): List<T> = when {
-    this is LinkList<T> -> LinkList(this.head, this.tail.append(list))
+    this is LinkList -> LinkList(this.head, this.tail.append(list))
     else -> list
 }
 
@@ -72,7 +72,7 @@ fun List<Int>.sum(): Int = when (this) {
  * 右折叠
  */
 fun <T, R>List<T>.foldRight(init: R, f: (T, R) -> R): R = when {
-    this is LinkList<T> -> f(this.head, this.tail.foldRight(init, f))
+    this is LinkList -> f(this.head, this.tail.foldRight(init, f))
     else -> init
 }
 
@@ -80,7 +80,7 @@ fun <T, R>List<T>.foldRight(init: R, f: (T, R) -> R): R = when {
  * 左折叠
  */
 fun <T, R>List<T>.foldLeft(init: R, f: (T, R) -> R): R = when {
-    this is LinkList<T> -> this.tail.foldLeft(f(this.head, init), f)
+    this is LinkList -> this.tail.foldLeft(f(this.head, init), f)
     else -> init
 }
 
@@ -88,7 +88,7 @@ fun <T, R>List<T>.foldLeft(init: R, f: (T, R) -> R): R = when {
  * 长度
  */
 fun <T>List<T>.count() = when(this) {
-    is LinkList<T> -> this.foldRight(0, { a, b -> b + 1 })
+    is LinkList -> this.foldRight(0, { a, b -> b + 1 })
     else -> 0
 }
 
@@ -110,7 +110,8 @@ fun <T, R>List<T>.map(f: (a: T) -> R): List<R> = this.foldRight<T, List<R>>(Nil,
 /**
  * filter
  */
-fun <T>List<T>.filter(f: (a: T) -> Boolean): List<T> = this.foldRight<T, List<T>>(Nil, { a, l -> LinkList(a, l).dropWhile { !f(it) } })
+//fun <T>List<T>.filter(f: (a: T) -> Boolean): List<T> = this.foldRight<T, List<T>>(Nil, { a, l -> LinkList(a, l).dropWhile { !f(it) } })
+fun <T>List<T>.filter(f: (a: T) -> Boolean): List<T> = this.foldRight<T, List<T>>(Nil, { a, l -> if (f(a)) LinkList(a, l) else l })
 
 /**
  * flatMap
@@ -142,11 +143,9 @@ fun <T>List<T>.hasSubSequence(l: List<T>): Boolean = when {
 /**
  *  从头开始比较两个 list 的元素是否相同，只按照较短的 list 比较，多出的不做比较
  */
-fun <T>compare(l1: List<T>, l2: List<T>): Boolean {
-    return when {
-        l1 is LinkList && l2 is LinkList -> if (l1.head == l2.head) compare(l1.tail, l2.tail) else false
-        else -> true
-    }
+fun <T>compare(l1: List<T>, l2: List<T>): Boolean = when {
+    l1 is LinkList && l2 is LinkList -> if (l1.head == l2.head) compare(l1.tail, l2.tail) else false
+    else -> true
 }
 
 fun main(args: Array<String>) {
@@ -168,6 +167,5 @@ fun main(args: Array<String>) {
     println(listOf(1, 2, 3).flatMap { listOf(it, it * 2) })
     println(listOf(1, 2, 3, 4, 5).filter2 { it % 2 == 0 })
     println(listOf(1, 2, 3).zipWith(listOf(1, 4, 6, 8), { a, b -> a + b }))
-    println(compare(listOf(1,2,3), listOf(1,2,3,4)))
     println(listOf(1, 2, 3, 4, 5, 6).hasSubSequence(listOf(5, 6)))
 }
