@@ -136,15 +136,15 @@ fun <T, R>List<T>.zipWith(l: List<T>, f: (a: T, b: T) -> R): List<R> = when {
  */
 fun <T>List<T>.hasSubSequence(l: List<T>): Boolean = when {
     l is Nil -> true
-    this is LinkList && l is LinkList -> if (compare(this, l)) true else this.tail.hasSubSequence(l)
+    this is LinkList && l is LinkList -> if (this.startWith(l)) true else this.tail.hasSubSequence(l)
     else -> false
 }
 
 /**
- *  从头开始比较两个 list 的元素是否相同，只按照较短的 list 比较，多出的不做比较
+ *  是否已指定列表开头
  */
-fun <T>compare(l1: List<T>, l2: List<T>): Boolean = when {
-    l1 is LinkList && l2 is LinkList -> if (l1.head == l2.head) compare(l1.tail, l2.tail) else false
+fun <T>List<T>.startWith(l2: List<T>): Boolean = when {
+    this is LinkList && l2 is LinkList -> if (this.head == l2.head) this.tail.startWith(l2.tail) else false
     else -> true
 }
 
