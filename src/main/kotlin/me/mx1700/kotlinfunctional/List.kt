@@ -148,6 +148,11 @@ fun <T>List<T>.startWith(l2: List<T>): Boolean = when {
     else -> true
 }
 
+fun <A>fillList(n: Int, f: A): List<A> = when {
+    n == 0 -> Nil
+    else -> LinkList(f, fillList(n - 1, f))
+}
+
 fun main(args: Array<String>) {
     println(listOf(1, 2, 3))
     println(listOf(1, 2, 3).sum())
@@ -168,4 +173,5 @@ fun main(args: Array<String>) {
     println(listOf(1, 2, 3, 4, 5).filter2 { it % 2 == 0 })
     println(listOf(1, 2, 3).zipWith(listOf(1, 4, 6, 8), { a, b -> a + b }))
     println(listOf(1, 2, 3, 4, 5, 6).hasSubSequence(listOf(5, 6)))
+    println(fillList(5, "aaa"))
 }

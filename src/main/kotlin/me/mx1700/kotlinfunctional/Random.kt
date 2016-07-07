@@ -51,6 +51,16 @@ fun <A, B>both(ra: (RNG) -> Pair<A, RNG>, rb: (RNG) -> Pair<B, RNG>): (RNG) -> P
 fun randIntDouble(): (RNG) -> Pair<Pair<Int, Double>, RNG> = both(RNG::nextInt, RNG::double)
 fun randDoubleInt(): (RNG) -> Pair<Pair<Double, Int>, RNG> = both(RNG::double, RNG::nextInt)
 
+fun <A>sequence(fs: List<(RNG) -> Pair<A, RNG>>): (RNG) -> Pair<List<A>, RNG> = { rng ->
+    fs.foldLeft<(RNG) -> Pair<A, RNG>, Pair<List<A>, RNG>>(Nil to rng, { f, pair ->
+        val (list, r) = pair
+        val (v, r2) = f(r)
+        LinkList(v, list) to r2
+    })
+}
+fun RNG.ints2(count: Int): Pair<List<Int>, RNG> = sequence(fillList(count, RNG::nonNegativeInt))(this)
+
+//---------------------------------
 
 interface Rand<A> {
     fun call(rng: RNG): Pair<A, RNG>
@@ -80,10 +90,10 @@ fun main(args: Array<String>) {
 
     println(randIntDouble()(r5))
     println(randDoubleInt()(r5))
-    //TODO: 做到了练习 6.6
 
+    println(r.ints2(3))
 
-
+    //TODO: 做到了练习 6.7
 
     //test<Int>({ r -> 1 to r })
     //test({  })
