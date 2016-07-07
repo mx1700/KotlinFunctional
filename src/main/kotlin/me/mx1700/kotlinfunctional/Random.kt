@@ -60,6 +60,32 @@ fun <A>sequence(fs: List<(RNG) -> Pair<A, RNG>>): (RNG) -> Pair<List<A>, RNG> = 
 }
 fun RNG.ints2(count: Int): Pair<List<Int>, RNG> = sequence(fillList(count, RNG::nonNegativeInt))(this)
 
+
+fun <A, B>flatMap(f: (RNG) -> Pair<A, RNG>, g: (A) -> (RNG) -> Pair<B, RNG>): (RNG) -> Pair<B, RNG> = { rng ->
+    val (v, r) = f(rng)
+    g(v)(r)
+}
+fun nonNegativeLessThan(n: Int): (RNG) -> Pair<Int, RNG> = flatMap(RNG::nonNegativeInt, { v ->
+    { rng: RNG ->
+        val mod = v % n
+        if (v + (n - 1) - mod >= 0)
+            mod to rng
+        else
+            nonNegativeLessThan(n)(rng)
+    }
+})
+fun <A, B>map_1(s: (RNG) -> Pair<A, RNG>, f: (A) -> B): (RNG) -> Pair<B, RNG> = flatMap(s, { v ->
+    { rng: RNG ->
+        f(v) to rng
+    }
+})
+fun <A, B, C>map2_1(ra: (RNG) -> Pair<A, RNG>, rb: (RNG) -> Pair<B, RNG>, f: (A, B) -> C): (RNG) -> Pair<C, RNG> = flatMap(ra, { a ->
+    { rng: RNG ->
+        val (b, r) = rb(rng)
+        f(a, b) to r
+    }
+})
+
 //---------------------------------
 
 interface Rand<A> {
@@ -73,7 +99,7 @@ object Test2 {
 }
 
 fun main(args: Array<String>) {
-    val r = SimpleRNG(1)
+    val r = SimpleRNG(1234567)
     val (v, r2) = r.nextInt()
     val (v2, r3) = r2.nextInt()
     println(v)
@@ -93,7 +119,10 @@ fun main(args: Array<String>) {
 
     println(r.ints2(3))
 
-    //TODO: 做到了练习 6.7
+    println(nonNegativeLessThan(100)(r5))
+    println(map_1(nonNegativeLessThan(100), { v -> "val:$v" })(r5))
+    println(map2_1(nonNegativeLessThan(100), nonNegativeLessThan(100), { a, b -> a to b })(r5))
+
 
     //test<Int>({ r -> 1 to r })
     //test({  })
